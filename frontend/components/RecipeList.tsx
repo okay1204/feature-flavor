@@ -42,7 +42,7 @@ export function RecipeList() {
     }, [fetchRecipes]);
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="w-1/2 flex flex-col gap-6">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
                 Recipe List
             </h1>
