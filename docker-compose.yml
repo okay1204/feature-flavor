@@ -8,6 +8,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/setup.sql:/docker-entrypoint-initdb.d/01-setup.sql
+      - ./backend/scripts/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
     ports:
       - "5432:5432"
     healthcheck:
@@ -19,6 +20,8 @@ services:
   backend:
     build:
       context: ./backend
+    env_file:
+      - ./backend/.env
     ports:
       - "8000:8000"
     environment:
@@ -30,6 +33,16 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
