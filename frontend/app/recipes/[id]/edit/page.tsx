@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 export default function EditRecipePage() {
   const params = useParams();
   const router = useRouter();
@@ -23,7 +21,7 @@ export default function EditRecipePage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/recipe/${id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/recipe/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Recipe not found");
         return res.json();
@@ -63,7 +61,7 @@ export default function EditRecipePage() {
     setError(null);
     const validIngredients = ingredients.filter((ing) => ing.name.trim());
     try {
-      const res = await fetch(`${API_BASE}/recipe/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recipe/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

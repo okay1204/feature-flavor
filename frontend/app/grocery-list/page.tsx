@@ -5,8 +5,6 @@ import { useFlags } from "launchdarkly-react-client-sdk";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 export default function GroceryListPage() {
   const flags = useFlags();
   const groceryListEnabled = flags?.groceryList === true;
@@ -20,7 +18,7 @@ export default function GroceryListPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/recipe/?limit=100`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/recipe/?limit=100`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load recipes");
         return res.json();
@@ -59,7 +57,7 @@ export default function GroceryListPage() {
     setError(null);
     setGroceryList(null);
     try {
-      const res = await fetch(`${API_BASE}/grocerylist/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/grocerylist/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(ids),

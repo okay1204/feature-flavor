@@ -7,11 +7,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import RecipeCard from "./RecipeCard";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 export function RecipeList() {
   const flags = useFlags();
   const groceryListEnabled = flags?.groceryList === true;
+  const gridLayout = flags?.gridRecipeLayout === true;
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,10 +31,10 @@ export function RecipeList() {
     try {
       const params = new URLSearchParams({
         cursor: String(cursorRef.current),
-        limit: "10",
+        limit: "20",
       });
       if (searchRef.current) params.set("search", searchRef.current);
-      const res = await fetch(`${API_BASE}/recipe/?${params}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recipe/?${params}`);
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       setRecipes((prev) => (reset ? data.data : [...prev, ...data.data]));
@@ -116,7 +115,13 @@ export function RecipeList() {
           }
           scrollableTarget="recipe-scroll"
         >
-          <div className="space-y-3">
+          <div
+            className={
+              gridLayout
+                ? "grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                : "space-y-3"
+            }
+          >
             {recipes.map((recipe) => (
               <RecipeCard key={recipe.id} recipe={recipe} />
             ))}

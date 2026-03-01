@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 export default function NewRecipePage() {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -38,7 +36,7 @@ export default function NewRecipePage() {
     setError(null);
     const validIngredients = ingredients.filter((ing) => ing.name.trim());
     try {
-      const res = await fetch(`${API_BASE}/recipe/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recipe/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

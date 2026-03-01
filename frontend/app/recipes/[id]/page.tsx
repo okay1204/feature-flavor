@@ -1,15 +1,15 @@
 "use client";
 
 import { Recipe } from "@/types/recipes";
+import { useLDClient } from "launchdarkly-react-client-sdk";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
 export default function RecipePage() {
   const params = useParams();
   const router = useRouter();
+  const ldClient = useLDClient();
   const id = params.id as string;
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,7 +22,7 @@ export default function RecipePage() {
     if (!confirm("Delete this recipe? This cannot be undone.")) return;
     setDeleting(true);
     try {
-      const res = await fetch(`${API_BASE}/recipe/${id}`, { method: "DELETE" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/recipe/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
       router.push("/");
     } catch (e) {
@@ -42,15 +42,18 @@ export default function RecipePage() {
   }, []);
 
   useEffect(() => {
-    fetch(`${API_BASE}/recipe/${id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/recipe/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Recipe not found");
         return res.json();
       })
-      .then(setRecipe)
+      .then((data) => {
+        setRecipe(data);
+        ldClient?.track("view_recipe", { recipeId: parseInt(id, 10), recipeName: data.name });
+      })
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, ldClient]);
 
   if (loading) {
     return (
