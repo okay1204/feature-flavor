@@ -27,7 +27,6 @@ async def lifespan(app: FastAPI):
     ldclient.set_config(Config(config('LAUNCHDARKLY_SDK_KEY')))
     if not ldclient.get().is_initialized():
         raise Exception('LaunchDarkly client not initialized')
-    ldclient.get().flush()
     yield
     ldclient.get().flush()
     await DbConnection.cleanup()
