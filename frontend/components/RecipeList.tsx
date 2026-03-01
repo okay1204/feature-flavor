@@ -51,7 +51,7 @@ export function RecipeList() {
     fetchRecipes(true);
   }, [fetchRecipes]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch: React.ComponentProps<"form">["onSubmit"] = (e) => {
     e.preventDefault();
     searchRef.current = searchInput;
     fetchRecipes(true);

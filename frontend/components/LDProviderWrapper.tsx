@@ -1,7 +1,7 @@
 "use client";
 
-import { LDContext, LDProvider } from "launchdarkly-react-client-sdk";
-import { useCallback, useEffect, useState } from "react";
+import { LDProvider } from "launchdarkly-react-client-sdk";
+import { useCallback, useState } from "react";
 
 const USER_KEY = "ld-user-type";
 
@@ -12,26 +12,20 @@ function getStoredUserType(): "default" | "beta" {
 }
 
 export function LDProviderWrapper({ children }: { children: React.ReactNode }) {
-  const [userType, setUserType] = useState<"default" | "beta">("default");
-  const [context, setContext] = useState<LDContext>({
-    key: userType === "default" ? "1" : "0",
-    kind: "user",
-    type: userType,
-  });
+  const [userType, setUserType] = useState<"default" | "beta">(() => getStoredUserType());
 
   const handleUserChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value as "default" | "beta";
     setUserType(value);
-    setContext({
-      key: value === "default" ? "1" : "0",
-      kind: "user",
-      type: value,
-    });
     localStorage.setItem(USER_KEY, value);
   }, []);
 
   return (
-    <LDProvider key={userType} clientSideID="69a22c3c81adb50a28f9417b" context={context}>
+    <LDProvider key={userType} clientSideID="69a22c3c81adb50a28f9417b" context={{
+      key: userType === "default" ? "1" : "0",
+      kind: "user",
+      type: userType,
+    }}>
       <select
         value={userType}
         onChange={handleUserChange}
