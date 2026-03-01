@@ -1,12 +1,12 @@
 from asyncpg import Connection
 from database.connection import DbConnection
 from fastapi import APIRouter, HTTPException
-from utils.models import Ingredient, Recipe
+from utils.models import Ingredient, Recipe, RecipeCreate
 
 router = APIRouter(prefix = "/recipe")
 
 @router.post("/")
-async def create_recipe(recipe: Recipe):
+async def create_recipe(recipe: RecipeCreate):
     async with DbConnection.pool.acquire() as conn:
         conn: Connection
         async with conn.transaction():
@@ -30,7 +30,7 @@ async def get_recipe(recipe_id: int):
     return recipe
 
 @router.put("/{recipe_id}")
-async def update_recipe(recipe_id: int, recipe: Recipe):
+async def update_recipe(recipe_id: int, recipe: RecipeCreate):
     async with DbConnection.pool.acquire() as conn:
         conn: Connection
         async with conn.transaction():
@@ -57,15 +57,24 @@ async def delete_recipe(recipe_id: int):
 
 @router.get("/")
 async def get_recipes(cursor: int = 0, limit: int = 10, search: str = ""):
+    fetch_limit = limit + 1
+    search_pattern = f"%{search}%"
     async with DbConnection.pool.acquire() as conn:
         conn: Connection
-        recipes = await conn.fetch(
-            "SELECT * FROM recipes WHERE id > $1 AND name LIKE $2 ORDER BY id LIMIT $3",
-            cursor, f"%{search}%", limit
-        )
-    has_more = len(recipes) == limit
-    data = [Recipe(**r) for r in recipes]
-    next_cursor = recipes[-1]["id"] if recipes else cursor
+        if not cursor:
+            recipes = await conn.fetch(
+                "SELECT * FROM recipes WHERE name ILIKE $1 ORDER BY id DESC LIMIT $2",
+                search_pattern, fetch_limit
+            )
+        else:
+            recipes = await conn.fetch(
+                "SELECT * FROM recipes WHERE id < $1 AND name ILIKE $2 ORDER BY id DESC LIMIT $3",
+                cursor, search_pattern, fetch_limit
+            )
+    has_more = len(recipes) > limit
+    page = recipes[:limit]
+    data = [Recipe(**r) for r in page]
+    next_cursor = page[-1]["id"] if page else cursor
 
     return {
         "data": data,
