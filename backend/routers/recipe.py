@@ -3,7 +3,7 @@ from database.connection import DbConnection
 from fastapi import APIRouter, HTTPException
 from utils.models import Ingredient, Recipe
 
-router = APIRouter(prefix = "/recipe", tags = ["recipe"])
+router = APIRouter(prefix = "/recipe")
 
 @router.post("/")
 async def create_recipe(recipe: Recipe):
