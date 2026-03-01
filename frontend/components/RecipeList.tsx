@@ -44,7 +44,7 @@ export function RecipeList() {
     return (
         <div className="w-1/2 flex flex-col gap-6">
             <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                Recipe List
+                Your Recipes
             </h1>
             {error && (
                 <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
