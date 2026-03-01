@@ -2,10 +2,12 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
+import ldclient
 from database.connection import DbConnection
 from decouple import config
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from ldclient.config import Config
 from utils.log import ColourizedFormatter
 
 # Setup Logging
@@ -21,7 +23,13 @@ logger.setLevel(logging.DEBUG)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await DbConnection.initialize()
+
+    ldclient.set_config(Config(config('LAUNCHDARKLY_SDK_KEY')))
+    if not ldclient.get().is_initialized():
+        raise Exception('LaunchDarkly client not initialized')
+    ldclient.get().flush()
     yield
+    ldclient.get().flush()
     await DbConnection.cleanup()
 
 app = FastAPI(title = 'Feature Flavor API', version = '0.1.0', description = 'Backend API for Feature Flavor', lifespan = lifespan)
