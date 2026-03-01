@@ -1,0 +1,6 @@
+asyncpg==0.30.0
+click==8.2.1
+fastapi==0.115.14
+fastapi-cli==0.0.7
+python-decouple==3.8
+uvicorn[standard]==0.34.3
