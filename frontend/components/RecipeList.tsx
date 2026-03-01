@@ -1,6 +1,7 @@
 "use client";
 
 import { Recipe } from "@/types/recipes";
+import { useFlags } from "launchdarkly-react-client-sdk";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -9,6 +10,8 @@ import RecipeCard from "./RecipeCard";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export function RecipeList() {
+  const flags = useFlags();
+  const groceryListEnabled = flags?.groceryList === true;
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,16 +60,26 @@ export function RecipeList() {
 
   return (
     <div className="w-1/2 flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           Your Recipes
         </h1>
-        <Link
-          href="/recipes/new"
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          Create recipe
-        </Link>
+        <div className="flex gap-2">
+          {groceryListEnabled && (
+            <Link
+              href="/grocery-list"
+              className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-card-hover"
+            >
+              Grocery list
+            </Link>
+          )}
+          <Link
+            href="/recipes/new"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Create recipe
+          </Link>
+        </div>
       </div>
       <form onSubmit={handleSearch} className="flex gap-2">
         <input
