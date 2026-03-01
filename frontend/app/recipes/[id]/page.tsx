@@ -2,18 +2,35 @@
 
 import { Recipe } from "@/types/recipes";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function RecipePage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checked, setChecked] = useState<Set<number>>(new Set());
+
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!confirm("Delete this recipe? This cannot be undone.")) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`${API_BASE}/recipe/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete");
+      router.push("/");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const toggleIngredient = useCallback((i: number) => {
     setChecked((prev) => {
@@ -69,14 +86,34 @@ export default function RecipePage() {
       </Link>
 
       <header className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-          {recipe.name}
-        </h1>
-        {recipe.description && (
-          <p className="mt-2 text-lg leading-relaxed text-muted-foreground">
-            {recipe.description}
-          </p>
-        )}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              {recipe.name}
+            </h1>
+            {recipe.description && (
+              <p className="mt-2 text-lg leading-relaxed text-muted-foreground">
+                {recipe.description}
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <Link
+              href={`/recipes/${id}/edit`}
+              className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-card-hover"
+            >
+              Edit
+            </Link>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/20 disabled:opacity-50"
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </button>
+          </div>
+        </div>
       </header>
 
       <div className="space-y-8">
