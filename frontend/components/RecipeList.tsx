@@ -2,10 +2,12 @@
 
 import { Recipe } from "@/types/recipes";
 import { useFlags } from "launchdarkly-react-client-sdk";
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import RecipeCard from "./RecipeCard";
+import RecipeCard from "@/components/RecipeCard";
+import { ErrorAlert } from "@/components/ui/ErrorAlert";
+import { RecipeSearchForm } from "@/components/RecipeSearchForm";
+import Link from "next/link";
 
 export function RecipeList() {
   const flags = useFlags();
@@ -40,9 +42,11 @@ export function RecipeList() {
       setRecipes((prev) => (reset ? data.data : [...prev, ...data.data]));
       cursorRef.current = data.next_cursor;
       setHasMore(data.has_more);
-    } catch (e) {
+    }
+    catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load");
-    } finally {
+    }
+    finally {
       loadingRef.current = false;
     }
   }, []);
@@ -80,26 +84,12 @@ export function RecipeList() {
           </Link>
         </div>
       </div>
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <input
-          type="search"
-          placeholder="Search recipes..."
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          className="flex-1 rounded-lg border border-border bg-card px-4 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-        <button
-          type="submit"
-          className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-card-hover"
-        >
-          Search
-        </button>
-      </form>
-      {error && (
-        <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-          {error}
-        </p>
-      )}
+      <RecipeSearchForm
+        value={searchInput}
+        onChange={setSearchInput}
+        onSubmit={handleSearch}
+      />
+      {error && <ErrorAlert message={error} />}
       <div
         id="recipe-scroll"
         className="-mx-1 max-h-[70vh] overflow-y-auto px-1"
